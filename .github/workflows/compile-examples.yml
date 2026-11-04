@@ -1,0 +1,55 @@
+name: Compile Examples
+
+on:
+  push:
+    paths:
+      - 'src/**'
+      - 'examples/**'
+      - 'library.properties'
+      - '.github/workflows/compile-examples.yml'
+  pull_request:
+    paths:
+      - 'src/**'
+      - 'examples/**'
+      - 'library.properties'
+      - '.github/workflows/compile-examples.yml'
+
+jobs:
+  build:
+    name: Build Sketches
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        board:
+          - fqbn: "arduino:avr:uno"
+            platform: "arduino:avr"
+          - fqbn: "arduino:avr:nano"
+            platform: "arduino:avr"
+          - fqbn: "esp32:esp32:esp32"
+            platform: "esp32:esp32"
+            platform-index-url: "https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json"
+          - fqbn: "rp2040:rp2040:pico"
+            platform: "rp2040:rp2040"
+            platform-index-url: "https://github.com/earlephilhower/arduino-pico/releases/download/global/package_rp2040_index.json"
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Compile Arduino Examples
+        uses: arduino/compile-sketches@v1
+        with:
+          fqbn: ${{ matrix.board.fqbn }}
+          platforms: |
+            - name: ${{ matrix.board.platform }}
+              source-url: ${{ matrix.board.platform-index-url }}
+          libraries: |
+            - source-path: ./
+          sketch-paths: |
+            - examples/01_BasicReading
+            - examples/02_FilteredReading
+            - examples/03_NonBlocking
+            - examples/04_ZeroCalibration
+            - examples/05_ESP32_3V3_Operation

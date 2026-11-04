@@ -1,0 +1,26 @@
+{
+  "name": "Waveshare Dust Sensor",
+  "version": "1.0.0",
+  "description": "A lightweight, non-blocking library for the Waveshare Dust Sensor (Sharp GP2Y1010AU0F).",
+  "keywords": [
+    "sensor",
+    "dust",
+    "air-quality",
+    "gp2y1010au0f",
+    "pm2.5",
+    "waveshare",
+    "environmental"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-username/Waveshare_Dust_Sensor.git"
+  },
+  "authors": [
+    {
+      "name": "Waveshare Dust Sensor Library Contributors"
+    }
+  ],
+  "license": "MIT",
+  "frameworks": "arduino",
+  "platforms": "*"
+}

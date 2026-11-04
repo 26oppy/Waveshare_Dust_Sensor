@@ -1,0 +1,45 @@
+#######################################
+# Syntax Coloring Map For Waveshare Dust Sensor
+#######################################
+
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+
+WaveshareDustSensor	KEYWORD1
+DustAirQuality	KEYWORD1
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+
+begin	KEYWORD2
+read	KEYWORD2
+update	KEYWORD2
+calibrateZero	KEYWORD2
+getRawADC	KEYWORD2
+getPinVoltage	KEYWORD2
+getActualVoltage	KEYWORD2
+getDustDensity	KEYWORD2
+getDustDensityMg	KEYWORD2
+getAirQuality	KEYWORD2
+getAirQualityString	KEYWORD2
+setVRef	KEYWORD2
+setAdcResolution	KEYWORD2
+setVoltageDividerRatio	KEYWORD2
+setSensitivity	KEYWORD2
+setBaselineVoltage	KEYWORD2
+getBaselineVoltage	KEYWORD2
+enableFilter	KEYWORD2
+resetFilter	KEYWORD2
+
+#######################################
+# Constants (LITERAL1)
+#######################################
+
+EXCELLENT	LITERAL1
+GOOD	LITERAL1
+MODERATE	LITERAL1
+POOR	LITERAL1
+VERY_POOR	LITERAL1
+HAZARDOUS	LITERAL1
