@@ -64,23 +64,61 @@ This library provides an industrial-grade, zero-allocation C++ driver designed f
 
 ---
 
-## Installation
+## Download & Installation
 
-### PlatformIO
-Add the library to your `platformio.ini`:
+You can install this library using any of the four methods below:
+
+### Option 1: Direct .ZIP Download (Recommended for Quick Setup)
+1. Download the latest release `.zip` from **[GitHub Releases](https://github.com/26oppy/Waveshare_Dust_Sensor/releases/latest)**.
+2. In the Arduino IDE, navigate to:  
+   **Sketch** $\rightarrow$ **Include Library** $\rightarrow$ **Add .ZIP Library...**
+3. Select the downloaded `.zip` file.
+4. Open any example sketch from:  
+   **File** $\rightarrow$ **Examples** $\rightarrow$ **Waveshare Dust Sensor** $\rightarrow$ **01_BasicReading**.
+
+---
+
+### Option 2: Arduino IDE Library Manager
+*(Available once indexing is complete)*
+1. Open the Arduino IDE (v1.8.x or v2.x).
+2. Go to **Tools** $\rightarrow$ **Manage Libraries...** (or press `Ctrl+Shift+I` / `Cmd+Shift+I`).
+3. Search for **"Waveshare Dust Sensor"**.
+4. Click **Install**.
+
+---
+
+### Option 3: PlatformIO
+Add the dependency directly to your project's `platformio.ini`:
+
 ```ini
 [env:myboard]
 platform = atmelavr
 board = uno
 framework = arduino
 lib_deps =
-    Waveshare Dust Sensor
+    https://github.com/26oppy/Waveshare_Dust_Sensor.git
 ```
 
-### Arduino IDE
-1. Download this repository as a `.zip` archive.
-2. In the Arduino IDE, open **Sketch** $\rightarrow$ **Include Library** $\rightarrow$ **Add .ZIP Library...**
-3. Select the downloaded `.zip` file.
+Or install it globally via the PlatformIO CLI:
+```bash
+pio pkg install --library "https://github.com/26oppy/Waveshare_Dust_Sensor.git"
+```
+
+---
+
+### Option 4: Git Clone (Manual Installation)
+Clone this repository directly into your local Arduino libraries directory:
+
+* **Windows (PowerShell):**
+  ```powershell
+  cd "$HOME\Documents\Arduino\libraries"
+  git clone https://github.com/26oppy/Waveshare_Dust_Sensor.git
+  ```
+* **macOS / Linux:**
+  ```bash
+  cd ~/Documents/Arduino/libraries
+  git clone https://github.com/26oppy/Waveshare_Dust_Sensor.git
+  ```
 
 ---
 
