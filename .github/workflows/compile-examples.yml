@@ -15,25 +15,47 @@ on:
       - '.github/workflows/compile-examples.yml'
 
 jobs:
-  build:
-    name: Build Sketches
+  build-avr:
+    name: Build AVR (${{ matrix.board.fqbn }})
     runs-on: ubuntu-latest
-
     strategy:
       fail-fast: false
       matrix:
         board:
           - fqbn: "arduino:avr:uno"
-            platform: "arduino:avr"
           - fqbn: "arduino:avr:nano"
-            platform: "arduino:avr"
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Compile Arduino Examples
+        uses: arduino/compile-sketches@v1
+        with:
+          fqbn: ${{ matrix.board.fqbn }}
+          platforms: |
+            - name: arduino:avr
+          libraries: |
+            - source-path: ./
+          sketch-paths: |
+            - examples/01_BasicReading
+            - examples/02_FilteredReading
+            - examples/03_NonBlocking
+            - examples/04_ZeroCalibration
+            - examples/05_ESP32_3V3_Operation
+
+  build-third-party:
+    name: Build Third-Party (${{ matrix.board.fqbn }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        board:
           - fqbn: "esp32:esp32:esp32"
             platform: "esp32:esp32"
             platform-index-url: "https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json"
           - fqbn: "rp2040:rp2040:pico"
             platform: "rp2040:rp2040"
             platform-index-url: "https://github.com/earlephilhower/arduino-pico/releases/download/global/package_rp2040_index.json"
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -53,4 +75,3 @@ jobs:
             - examples/03_NonBlocking
             - examples/04_ZeroCalibration
             - examples/05_ESP32_3V3_Operation
-

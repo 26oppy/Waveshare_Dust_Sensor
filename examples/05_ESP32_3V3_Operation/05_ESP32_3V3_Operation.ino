@@ -40,12 +40,17 @@ void setup() {
 
 void loop() {
     if (dustSensor.read()) {
-        Serial.printf("Raw ADC (12-bit): %4d | Pin Volts: %1.3f V | Actual Sensor: %1.3f V | Density: %3.1f ug/m3 [%s]\n",
-                      dustSensor.getRawADC(),
-                      dustSensor.getPinVoltage(),
-                      dustSensor.getActualVoltage(),
-                      dustSensor.getDustDensity(),
-                      dustSensor.getAirQualityString());
+        Serial.print(F("Raw ADC (12-bit): "));
+        Serial.print(dustSensor.getRawADC());
+        Serial.print(F(" | Pin Volts: "));
+        Serial.print(dustSensor.getPinVoltage(), 3);
+        Serial.print(F(" V | Actual Sensor: "));
+        Serial.print(dustSensor.getActualVoltage(), 3);
+        Serial.print(F(" V | Density: "));
+        Serial.print(dustSensor.getDustDensity(), 1);
+        Serial.print(F(" ug/m3 ["));
+        Serial.print(dustSensor.getAirQualityString());
+        Serial.println(F("]"));
     }
 
     delay(500);
