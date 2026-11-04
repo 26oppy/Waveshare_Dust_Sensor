@@ -84,3 +84,4 @@ $$\text{Density } (\mu\text{g/m}^3) = (V_{\text{actual}} - V_{\text{zero}}) \tim
 1. **Airflow Direction:** Mount the sensor so that the round air through-hole is **vertical** (pointing up and down). Natural convection will carry warm air and dust upwards through the hole.
 2. **Never Clean with Liquids:** Do not use alcohol, water, or cotton swabs inside the hole. The optical lenses can get scratched or stained. Use gentle compressed air if cleaning is required.
 3. **Avoid Bright Sunlight:** The optical chamber is shielded, but intense direct sunlight entering the hole can produce false dust readings.
+
