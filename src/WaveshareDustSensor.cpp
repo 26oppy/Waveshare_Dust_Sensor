@@ -72,12 +72,7 @@ uint8_t WaveshareDustSensor::getIledPin() const {
     return _iledPin;
 }
 
-bool WaveshareDustSensor::read() {
-    // Fail-safe: ensure valid pins are configured
-    if (_aoutPin == UNASSIGNED_PIN || _iledPin == UNASSIGNED_PIN) {
-        return false;
-    }
-
+uint16_t WaveshareDustSensor::sampleSinglePulse() {
     // 1. Enable internal infrared emitting diode
     digitalWrite(_iledPin, HIGH);
 
@@ -100,10 +95,49 @@ bool WaveshareDustSensor::read() {
     _state = State::IDLE;
     _stateTimerMicros = micros();
 
-    // 7. Calculate physical values
-    processRawValue(rawValue);
+    return rawValue;
+}
 
+bool WaveshareDustSensor::read(uint8_t sampleCount) {
+    // Fail-safe: ensure valid pins are configured
+    if (_aoutPin == UNASSIGNED_PIN || _iledPin == UNASSIGNED_PIN) {
+        return false;
+    }
+
+    if (sampleCount <= 1) {
+        uint16_t rawValue = sampleSinglePulse();
+        processRawValue(rawValue);
+        return true;
+    }
+
+    // Burst oversampling with median filter to eliminate electrical noise spikes
+    if (sampleCount > 25) {
+        sampleCount = 25; // Bound stack array (50 bytes)
+    }
+
+    uint16_t samples[25];
+    for (uint8_t i = 0; i < sampleCount; ++i) {
+        samples[i] = sampleSinglePulse();
+    }
+
+    // Sort to extract the median
+    for (uint8_t i = 0; i < sampleCount - 1; ++i) {
+        for (uint8_t j = i + 1; j < sampleCount; ++j) {
+            if (samples[i] > samples[j]) {
+                uint16_t temp = samples[i];
+                samples[i] = samples[j];
+                samples[j] = temp;
+            }
+        }
+    }
+
+    uint16_t medianValue = samples[sampleCount / 2];
+    processRawValue(medianValue);
     return true;
+}
+
+bool WaveshareDustSensor::readMedian(uint8_t sampleCount) {
+    return read(sampleCount > 0 ? sampleCount : 10);
 }
 
 bool WaveshareDustSensor::update() {

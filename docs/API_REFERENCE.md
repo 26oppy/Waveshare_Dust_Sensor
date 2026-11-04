@@ -1,4 +1,4 @@
-# Waveshare Dust Sensor - API Reference
+﻿# Waveshare Dust Sensor - API Reference
 
 Comprehensive programming manual for the `WaveshareDustSensor` C++ driver class.
 
@@ -227,23 +227,50 @@ uint8_t getIledPin() const;
 
 ## Measurement & Sampling
 
-### `read()`
-Executes a synchronous (blocking) measurement pulse: drives `ILED` HIGH, waits $280\,\mu\text{s}$ for optical stabilization, samples `AOUT`, turns `ILED` LOW immediately, waits the $9.68\,\text{ms}$ cooldown, and updates calculated values.
+### `read(sampleCount)`
+Executes synchronous measurement.
+- If `sampleCount == 1` (default): Executes a single measurement pulse (drives `ILED` HIGH, waits $280\,\mu\text{s}$, samples `AOUT`, turns `ILED` LOW, and enforces $9.68\,\text{ms}$ cooldown).
+- If `sampleCount > 1` (e.g. `10`): Fires a burst of pulses spaced $10\,\text{ms}$ apart, collects the samples, and extracts the **median** reading to eliminate single-pulse optical jitter and electrical noise spikes.
 
 ```cpp
-bool read();
+bool read(uint8_t sampleCount = 1);
 ```
 
+| Parameter | Type | Default | Description |
+| :--- | :--- | :---: | :--- |
+| `sampleCount` | `uint8_t` | `1` | Number of pulse samples to capture and median-filter (recommended: `10` to `15`). |
+
 * **Returns:** `true` if sampling was successful, `false` if pins are unassigned.
-* **Blocking Time:** $\approx 10\,\text{ms}$ (compliant with the sensor's $3.2\%$ max duty cycle).
+* **Blocking Time:** $\approx 10\,\text{ms} \times \text{sampleCount}$ (e.g. $\approx 100\,\text{ms}$ for 10 samples).
 * **Example:**
   ```cpp
-  if (sensor.read()) {
-      Serial.print("Density: ");
-      Serial.println(sensor.getDustDensity());
+  // Recommended: 10-pulse burst median measurement
+  if (sensor.read(10)) {
+      Serial.print("Dust: ");
+      Serial.print(sensor.getDustDensity());
+      Serial.println(" ug/m3");
   }
   ```
 
+---
+
+### `readMedian(sampleCount)`
+Convenience wrapper that explicitly invokes burst sampling with median filtering.
+
+```cpp
+bool readMedian(uint8_t sampleCount = 10);
+```
+
+| Parameter | Type | Default | Description |
+| :--- | :--- | :---: | :--- |
+| `sampleCount` | `uint8_t` | `10` | Number of pulses in the burst (max bounded at 25). |
+
+* **Example:**
+  ```cpp
+  if (sensor.readMedian(10)) {
+      Serial.println(sensor.getAirQualityString());
+  }
+  ```
 ---
 
 ### `update()`

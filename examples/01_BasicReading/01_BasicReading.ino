@@ -8,14 +8,14 @@
  *   VCC                     ->   5V
  *   GND                     ->   GND
  *   AOUT                    ->   A0
- *   ILED                    ->   D2
+ *   ILED                    ->   D6 (or D2)
  */
 
 #include <WaveshareDustSensor.h>
 
-// Define hardware pins
+// Define hardware pins (adjust to match your physical wiring)
 const uint8_t PIN_AOUT = A0; // Analog output from sensor
-const uint8_t PIN_ILED = 2;  // Digital drive pin for internal IR LED
+const uint8_t PIN_ILED = 6;  // Digital drive pin for internal IR LED (e.g. D6 or D2)
 
 // Instantiate sensor driver (AOUT pin, ILED pin, Vref = 5.0V, 10-bit ADC = 1023)
 WaveshareDustSensor dustSensor(PIN_AOUT, PIN_ILED, 5.0f, 1023);
@@ -33,14 +33,19 @@ void setup() {
     // Initialize hardware pins
     dustSensor.begin();
 
-    // Optional: Set your known clean-air baseline voltage (internal voltage)
-    // Nominal default is 0.9V. Run the 04_ZeroCalibration sketch to measure your exact baseline.
-    dustSensor.setBaselineVoltage(0.9f);
+    // Set clean-air baseline voltage (internal voltage).
+    // Sharp GP2Y1010AU0F nominal is ~0.9V (typically 0.70V - 0.95V in normal rooms).
+    // Tip: Run example 04_ZeroCalibration or call dustSensor.calibrateZero(15)
+    // to automatically tune the zero-floor to your ambient room conditions.
+    dustSensor.setBaselineVoltage(0.85f);
 }
 
 void loop() {
-    // Perform synchronous measurement pulse (blocks for ~10ms)
-    if (dustSensor.read()) {
+    // Perform synchronous measurement.
+    // Passing 10 samples performs burst oversampling with median filtering (~100ms total),
+    // eliminating single-pulse electrical noise, USB power jitter, and transient spikes.
+    // Call dustSensor.read() or dustSensor.read(1) if you want single-pulse mode.
+    if (dustSensor.read(10)) {
         Serial.print(F("Raw ADC: "));
         Serial.print(dustSensor.getRawADC());
 
@@ -66,4 +71,3 @@ void loop() {
     // Wait 1 second before the next measurement
     delay(1000);
 }
-

@@ -14,13 +14,16 @@
 #include <WaveshareDustSensor.h>
 
 const uint8_t PIN_AOUT = A0;
-const uint8_t PIN_ILED = 2;
+const uint8_t PIN_ILED = 6; // Pin 6 (or D2 depending on your wiring)
 
 WaveshareDustSensor dustSensor(PIN_AOUT, PIN_ILED, 5.0f, 1023);
 
 void setup() {
     Serial.begin(9600);
     dustSensor.begin();
+
+    // Set clean-air baseline (nominal ~0.85V)
+    dustSensor.setBaselineVoltage(0.85f);
 
     // Enable EMA filter with an alpha of 0.20 (0.01 = heavy smoothing, 1.0 = raw/no filter)
     // A value of 0.15 - 0.25 provides an excellent balance of responsiveness and noise rejection.

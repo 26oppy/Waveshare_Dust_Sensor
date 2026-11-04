@@ -19,7 +19,7 @@
 #include <WaveshareDustSensor.h>
 
 const uint8_t PIN_AOUT = A0;
-const uint8_t PIN_ILED = 2;
+const uint8_t PIN_ILED = 6; // Pin 6 (or D2 depending on your wiring)
 
 WaveshareDustSensor dustSensor(PIN_AOUT, PIN_ILED, 5.0f, 1023);
 

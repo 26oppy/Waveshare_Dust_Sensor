@@ -80,10 +80,21 @@ public:
 
     /**
      * @brief Perform a synchronous (blocking) measurement.
-     * Drives the LED pulse, samples AOUT at 280us, and applies cool-down.
+     * Drives the LED pulse, samples AOUT at 280us, and enforces the cool-down period.
+     * When sampleCount > 1, fires a burst of pulses spaced 10ms apart and extracts the
+     * median value to filter out single-pulse electrical noise and optical jitter.
+     * @param sampleCount Number of pulses in the burst (default: 1 for single-shot).
      * @return true if measurement succeeded, false otherwise.
      */
-    bool read();
+    bool read(uint8_t sampleCount = 1);
+
+    /**
+     * @brief Perform a burst-median measurement to eliminate single-pulse electrical noise.
+     * Fires multiple pulses spaced 10ms apart and extracts the median ADC reading.
+     * @param sampleCount Number of pulses to sample (default: 10, max recommended: 25).
+     * @return true if measurement succeeded, false otherwise.
+     */
+    bool readMedian(uint8_t sampleCount = 10);
 
     /**
      * @brief Non-blocking state machine updater.
@@ -258,6 +269,7 @@ private:
     uint32_t _sampleIntervalMs;
 
     // Internal helper methods
+    uint16_t sampleSinglePulse();
     uint16_t readAdcRaw();
     void processRawValue(uint16_t rawAdc);
 };

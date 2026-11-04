@@ -1,4 +1,4 @@
-# Waveshare Dust Sensor Arduino Library
+﻿# Waveshare Dust Sensor Arduino Library
 
 <p align="center">
   <strong>Lightweight, non-blocking, zero-allocation C++ driver for the Waveshare Dust Sensor (Sharp GP2Y1010AU0F / GP2Y1014AU0F)</strong>
@@ -129,7 +129,7 @@ Clone this repository directly into your local Arduino libraries directory:
 #include <WaveshareDustSensor.h>
 
 const uint8_t PIN_AOUT = A0;
-const uint8_t PIN_ILED = 2;
+const uint8_t PIN_ILED = 6; // Pin 6 (or D2 depending on your board wiring)
 
 // Constructor: (AOUT pin, ILED pin, Vref = 5.0V, ADC Max = 1023)
 WaveshareDustSensor dustSensor(PIN_AOUT, PIN_ILED, 5.0f, 1023);
@@ -138,12 +138,17 @@ void setup() {
     Serial.begin(9600);
     dustSensor.begin();
 
-    // Enable smooth EMA filtering (alpha = 0.20)
+    // Baseline clean-air voltage (nominal ~0.85V)
+    dustSensor.setBaselineVoltage(0.85f);
+
+    // Optional: Enable smooth EMA filtering (alpha = 0.20)
     dustSensor.enableFilter(true, 0.20f);
 }
 
 void loop() {
-    if (dustSensor.read()) {
+    // Passing 10 samples performs burst-median sampling (~100ms)
+    // to completely reject optical jitter and electrical noise spikes!
+    if (dustSensor.read(10)) {
         Serial.print(F("Dust Density: "));
         Serial.print(dustSensor.getDustDensity(), 1);
         Serial.print(F(" ug/m3 | Air Quality: "));

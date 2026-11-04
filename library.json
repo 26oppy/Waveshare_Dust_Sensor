@@ -1,6 +1,6 @@
 {
   "name": "Waveshare Dust Sensor",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A lightweight, non-blocking library for the Waveshare Dust Sensor (Sharp GP2Y1010AU0F).",
   "keywords": [
     "sensor",

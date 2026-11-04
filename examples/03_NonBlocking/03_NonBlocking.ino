@@ -19,7 +19,7 @@
 #endif
 
 const uint8_t PIN_AOUT = A0;
-const uint8_t PIN_ILED = 2;
+const uint8_t PIN_ILED = 6; // Pin 6 (or D2 depending on your wiring)
 const uint8_t PIN_STATUS_LED = LED_BUILTIN; // Built-in heartbeat LED
 
 WaveshareDustSensor dustSensor(PIN_AOUT, PIN_ILED, 5.0f, 1023);
@@ -33,6 +33,7 @@ void setup() {
     pinMode(PIN_STATUS_LED, OUTPUT);
 
     dustSensor.begin();
+    dustSensor.setBaselineVoltage(0.85f);
     dustSensor.enableFilter(true, 0.25f);
 
     // Set non-blocking sampling rate to once per second (1000 ms)
