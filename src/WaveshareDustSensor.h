@@ -31,18 +31,48 @@ typedef uint16_t (*DustSensorAdcReader)(uint8_t pin);
 class WaveshareDustSensor {
 public:
     /**
-     * @brief Construct a new Waveshare Dust Sensor driver.
-     * @param aoutPin Microcontroller analog pin connected to AOUT.
-     * @param iledPin Microcontroller digital pin connected to ILED.
+     * @brief Default constructor. Pins can be assigned later via begin(aoutPin, iledPin) or setPins().
+     * Initializes with default 5.0V reference and 10-bit ADC (1023).
+     */
+    WaveshareDustSensor();
+
+    /**
+     * @brief Construct a new Waveshare Dust Sensor driver with explicit pin assignment.
+     * @param aoutPin Microcontroller analog pin connected to AOUT (any valid ADC pin).
+     * @param iledPin Microcontroller digital pin connected to ILED (any valid digital output pin).
      * @param vRef ADC reference voltage in Volts (default: 5.0V).
      * @param adcMax Maximum ADC value (default: 1023 for 10-bit ADC, use 4095 for 12-bit).
      */
     WaveshareDustSensor(uint8_t aoutPin, uint8_t iledPin, float vRef = 5.0f, uint16_t adcMax = 1023);
 
     /**
-     * @brief Initialize hardware pins. Call this in setup().
+     * @brief Initialize hardware pins using the pins configured in constructor. Call this in setup().
      */
     void begin();
+
+    /**
+     * @brief Configure pins and initialize hardware in a single call. Call this in setup().
+     * @param aoutPin Any valid microcontroller analog ADC pin connected to AOUT.
+     * @param iledPin Any valid microcontroller digital output pin connected to ILED.
+     */
+    void begin(uint8_t aoutPin, uint8_t iledPin);
+
+    /**
+     * @brief Assign or reassign hardware pins dynamically.
+     * @param aoutPin Any valid microcontroller analog ADC pin connected to AOUT.
+     * @param iledPin Any valid microcontroller digital output pin connected to ILED.
+     */
+    void setPins(uint8_t aoutPin, uint8_t iledPin);
+
+    /**
+     * @brief Get the currently assigned AOUT analog pin.
+     */
+    uint8_t getAoutPin() const;
+
+    /**
+     * @brief Get the currently assigned ILED digital control pin.
+     */
+    uint8_t getIledPin() const;
 
     // -------------------------------------------------------------------------
     // Measurement Methods

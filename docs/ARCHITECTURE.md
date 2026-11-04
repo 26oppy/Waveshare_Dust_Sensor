@@ -25,8 +25,8 @@ This document provides an in-depth reference for the electrical architecture, ti
 +---------------------------------------------------------------------------------------------------------+
 |                                                                                                         |
 |   VCC  (2.5V - 5.5V) ---> [ 5V Step-Up Boost Circuit ] ---------------------> Internal Rails            |
-|   ILED (Logic Pulse) ---> [ NPN Inverter Driver ] --------------------------> IRED Cathode             |
-|   AOUT (ADC Input)   <--- [ 11:1 Precision Voltage Divider ] <-------------- V_internal                |
+|   ILED (Logic Pulse) ---> [ NPN Inverter Driver ] --------------------------> IRED Cathode              |
+|   AOUT (ADC Input)   <--- [ 11:1 Precision Voltage Divider ] <-------------- V_internal                 |
 |   GND  (Ground)      <--- [ Common Ground Plane ]                                                       |
 |                                                                                                         |
 +---------------------------------------------------------------------------------------------------------+
@@ -155,3 +155,4 @@ Benchmarked with `-Os` (size optimization) on production toolchains:
 | **AVR ATmega328P** | `avr-gcc 7.3.0` | **1,084 bytes** | **32 bytes** | **0 bytes** |
 | **ESP32 (Xtensa LX6)**| `espressif32 6.5.0` | **1,348 bytes** | **36 bytes** | **0 bytes** |
 | **RP2040 (ARM Cortex-M0+)**| `arduino-pico 3.6.0` | **1,192 bytes** | **32 bytes** | **0 bytes** |
+

@@ -22,6 +22,7 @@ This library provides an industrial-grade, zero-allocation C++ driver designed f
 
 ### Key Features
 
+* **Flexible Pin Mapping:** Select **any** valid ADC pin for `AOUT` and **any** digital output pin for `ILED`, either in the constructor or dynamically via `begin(aoutPin, iledPin)` or `setPins()`.
 * **Zero-Allocation Memory Footprint:** Pure static allocation (0 bytes dynamic heap), using only **32 bytes** of static RAM.
 * **Onboard Hardware Divider Compensation ($\times 11$):** Automatically compensates for the Waveshare breakout board's built-in $11:1$ resistor divider on `AOUT`.
 * **Dual Execution Modes:**
@@ -37,13 +38,13 @@ This library provides an industrial-grade, zero-allocation C++ driver designed f
 
 ```
    Waveshare Dust Sensor                      Microcontroller
-+-------------------------+                 +--------------------+
-|  [VCC]  [GND] [AOUT][ILED]|                 |                    |
++-------------------------+                  +--------------------+
+|  [VCC]  [GND] [AOUT][ILED]|                |                    |
 |    |      |     |     |  |                 |                    |
 +----+------+-----+-----+--+                 |                    |
-     |      |     |     +--------------------> ILED Control Pin  |
-     |      |     +--------------------------> ADC Analog Input  |
-     |      +--------------------------------> GND (Common Ground) |
+     |      |     |     +--------------------> ILED Control Pin   |
+     |      |     +--------------------------> ADC Analog Input   |
+     |      +--------------------------------> GND (Common Ground)|
      +---------------------------------------> Power (2.5V - 5.5V)|
                                              +--------------------+
 ```
@@ -52,11 +53,14 @@ This library provides an industrial-grade, zero-allocation C++ driver designed f
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | **VCC** | Power (2.5V – 5.5V) | `5V` | `5V` (or `3V3`) | `VBUS` (5V) or `3V3` | `5V` or `3V3` |
 | **GND** | Ground | `GND` | `GND` | `GND` | `GND` |
-| **AOUT** | Analog Output | `A0` | `GPIO 34` (ADC1) | `GP26` (ADC0) | `PA0` (A0) |
-| **ILED** | IR LED Control | `D2` | `GPIO 25` | `GP15` | `PA1` (D2) |
+| **AOUT** | Analog Output | **Any Analog Pin** (e.g. `A0`–`A7`) | **Any ADC1 Pin** (`GPIO 32–39`) | **Any ADC Pin** (`GP26–28`) | **Any ADC Pin** (e.g. `PA0`) |
+| **ILED** | IR LED Control | **Any Digital Pin** (e.g. `D2`–`D13`) | **Any Digital Out** (e.g. `GPIO 25`) | **Any GPIO** (e.g. `GP15`) | **Any GPIO** (e.g. `PA1`) |
 
 > [!TIP]
-> **ESP32 Note:** Always connect `AOUT` to an **ADC1** pin (GPIO 32–39). ADC2 pins are disabled when WiFi is enabled.
+> **Pin Selection Rules:**
+> * `AOUT` connects to **any ADC-capable pin** on your microcontroller (for ESP32, choose from ADC1: GPIO 32, 33, 34, 35, 36, 39 to avoid conflicts with WiFi).
+> * `ILED` connects to **any standard digital output pin**.
+> * See the [Pin Selection Guide](docs/API_REFERENCE.md#pin-selection-guide) for board-specific matrices.
 
 ---
 

@@ -8,9 +8,13 @@
 #include "WaveshareDustSensor.h"
 
 // Optical pulse timing parameters (in microseconds) according to Sharp GP2Y1010AU0F specifications
+static const uint8_t UNASSIGNED_PIN         = 255;  // Sentinel for unconfigured pins
 static const uint32_t PULSE_SAMPLE_WAIT_US   = 280;  // 0.28ms LED stabilization time
 static const uint32_t CYCLE_OFF_TIME_US      = 9680; // 9.68ms minimum off-time (total cycle >= 10ms)
 static const uint32_t MIN_CYCLE_INTERVAL_MS  = 10;   // 10ms minimum sampling interval (100Hz max)
+
+WaveshareDustSensor::WaveshareDustSensor()
+    : WaveshareDustSensor(UNASSIGNED_PIN, UNASSIGNED_PIN, 5.0f, 1023) {}
 
 WaveshareDustSensor::WaveshareDustSensor(uint8_t aoutPin, uint8_t iledPin, float vRef, uint16_t adcMax)
     : _aoutPin(aoutPin),
@@ -36,8 +40,13 @@ WaveshareDustSensor::WaveshareDustSensor(uint8_t aoutPin, uint8_t iledPin, float
       _sampleIntervalMs(1000) {}  // Default 1Hz (1000ms) interval for non-blocking update()
 
 void WaveshareDustSensor::begin() {
-    pinMode(_iledPin, OUTPUT);
-    digitalWrite(_iledPin, LOW); // Ensure IR LED is off initially
+    if (_iledPin != UNASSIGNED_PIN) {
+        pinMode(_iledPin, OUTPUT);
+        digitalWrite(_iledPin, LOW); // Ensure IR LED is off initially
+    }
+    if (_aoutPin != UNASSIGNED_PIN) {
+        pinMode(_aoutPin, INPUT);    // Configure ADC pin in input mode
+    }
     _state = State::IDLE;
     _stateTimerMicros = micros();
     // Pre-arm so first call to update() triggers immediately
@@ -45,7 +54,30 @@ void WaveshareDustSensor::begin() {
     resetFilter();
 }
 
+void WaveshareDustSensor::begin(uint8_t aoutPin, uint8_t iledPin) {
+    setPins(aoutPin, iledPin);
+    begin();
+}
+
+void WaveshareDustSensor::setPins(uint8_t aoutPin, uint8_t iledPin) {
+    _aoutPin = aoutPin;
+    _iledPin = iledPin;
+}
+
+uint8_t WaveshareDustSensor::getAoutPin() const {
+    return _aoutPin;
+}
+
+uint8_t WaveshareDustSensor::getIledPin() const {
+    return _iledPin;
+}
+
 bool WaveshareDustSensor::read() {
+    // Fail-safe: ensure valid pins are configured
+    if (_aoutPin == UNASSIGNED_PIN || _iledPin == UNASSIGNED_PIN) {
+        return false;
+    }
+
     // 1. Enable internal infrared emitting diode
     digitalWrite(_iledPin, HIGH);
 
@@ -75,6 +107,11 @@ bool WaveshareDustSensor::read() {
 }
 
 bool WaveshareDustSensor::update() {
+    // Fail-safe: ensure valid pins are configured
+    if (_aoutPin == UNASSIGNED_PIN || _iledPin == UNASSIGNED_PIN) {
+        return false;
+    }
+
     uint32_t currentMillis = millis();
     uint32_t currentMicros = micros();
 
