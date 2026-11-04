@@ -20,7 +20,7 @@
 
 const uint8_t PIN_AOUT = A0;
 const uint8_t PIN_ILED = 2;
-const uint8_t PIN_LED  = LED_BUILTIN; // Built-in heartbeat LED
+const uint8_t PIN_STATUS_LED = LED_BUILTIN; // Built-in heartbeat LED
 
 WaveshareDustSensor dustSensor(PIN_AOUT, PIN_ILED, 5.0f, 1023);
 
@@ -30,7 +30,7 @@ bool ledState = false;
 
 void setup() {
     Serial.begin(9600);
-    pinMode(PIN_LED, OUTPUT);
+    pinMode(PIN_STATUS_LED, OUTPUT);
 
     dustSensor.begin();
     dustSensor.enableFilter(true, 0.25f);
@@ -57,7 +57,7 @@ void loop() {
     if (currentMillis - lastHeartbeat >= 500) {
         lastHeartbeat = currentMillis;
         ledState = !ledState;
-        digitalWrite(PIN_LED, ledState ? HIGH : LOW);
+        digitalWrite(PIN_STATUS_LED, ledState ? HIGH : LOW);
     }
 
     // Any other application code or communication protocols can run freely here!
