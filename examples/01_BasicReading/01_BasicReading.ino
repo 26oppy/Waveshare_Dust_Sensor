@@ -66,3 +66,4 @@ void loop() {
     // Wait 1 second before the next measurement
     delay(1000);
 }
+

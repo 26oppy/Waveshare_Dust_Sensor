@@ -53,3 +53,4 @@ jobs:
             - examples/03_NonBlocking
             - examples/04_ZeroCalibration
             - examples/05_ESP32_3V3_Operation
+

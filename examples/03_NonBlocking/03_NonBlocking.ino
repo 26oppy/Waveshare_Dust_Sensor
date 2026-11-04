@@ -31,6 +31,10 @@ void setup() {
     dustSensor.begin();
     dustSensor.enableFilter(true, 0.25f);
 
+    // Set non-blocking sampling rate to once per second (1000 ms)
+    // The driver will handle the 280us pulse, sampling, and 9.68ms cooldown asynchronously!
+    dustSensor.setSampleIntervalMs(1000);
+
     Serial.println(F("Waveshare Dust Sensor - Non-Blocking State Machine Demo"));
 }
 
@@ -54,3 +58,4 @@ void loop() {
 
     // Any other application code or communication protocols can run freely here!
 }
+

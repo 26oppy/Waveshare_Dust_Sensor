@@ -9,9 +9,8 @@
 
 // Optical pulse timing parameters (in microseconds) according to Sharp GP2Y1010AU0F specifications
 static const uint32_t PULSE_SAMPLE_WAIT_US   = 280;  // 0.28ms LED stabilization time
-static const uint32_t PULSE_SAMPLE_HOLD_US   = 40;   // 0.04ms sampling window (total pulse = 320us)
 static const uint32_t CYCLE_OFF_TIME_US      = 9680; // 9.68ms minimum off-time (total cycle >= 10ms)
-static const uint32_t MIN_CYCLE_INTERVAL_US  = 10000;// 10ms total minimum cycle interval
+static const uint32_t MIN_CYCLE_INTERVAL_MS  = 10;   // 10ms minimum sampling interval (100Hz max)
 
 WaveshareDustSensor::WaveshareDustSensor(uint8_t aoutPin, uint8_t iledPin, float vRef, uint16_t adcMax)
     : _aoutPin(aoutPin),
@@ -28,16 +27,21 @@ WaveshareDustSensor::WaveshareDustSensor(uint8_t aoutPin, uint8_t iledPin, float
       _customAdcReader(nullptr),
       _lastRawADC(0),
       _lastPinVoltage(0.0f),
+      _lastRawActualVoltage(0.0f),
       _lastActualVoltage(0.0f),
       _lastDustDensity(0.0f),
       _state(State::IDLE),
-      _stateTimerMicros(0) {}
+      _stateTimerMicros(0),
+      _lastSampleMillis(0),
+      _sampleIntervalMs(1000) {}  // Default 1Hz (1000ms) interval for non-blocking update()
 
 void WaveshareDustSensor::begin() {
     pinMode(_iledPin, OUTPUT);
     digitalWrite(_iledPin, LOW); // Ensure IR LED is off initially
     _state = State::IDLE;
     _stateTimerMicros = micros();
+    // Pre-arm so first call to update() triggers immediately
+    _lastSampleMillis = millis() - _sampleIntervalMs;
     resetFilter();
 }
 
@@ -49,31 +53,32 @@ bool WaveshareDustSensor::read() {
     delayMicroseconds(PULSE_SAMPLE_WAIT_US);
 
     // 3. Read analog voltage from sensor
+    // Note: analogRead takes ~112us on AVR (16MHz) or ~10us on ESP32.
+    // The ADC sample-and-hold captures the signal within the first ~12us.
     uint16_t rawValue = readAdcRaw();
 
-    // 4. Hold the pulse for 0.04ms to complete the 0.32ms pulse duration
-    delayMicroseconds(PULSE_SAMPLE_HOLD_US);
-
-    // 5. Turn off internal infrared diode
+    // 4. Turn off internal infrared diode immediately after reading
+    // This prevents pulse width from exceeding 320us on slower microcontrollers
     digitalWrite(_iledPin, LOW);
 
-    // 6. Complete the minimum off-time recovery period
+    // 5. Complete the minimum off-time recovery period (9.68ms)
     delayMicroseconds(CYCLE_OFF_TIME_US);
 
-    // 7. Calculate physical values
+    // 6. Calculate physical values
     processRawValue(rawValue);
 
     return true;
 }
 
 bool WaveshareDustSensor::update() {
+    uint32_t currentMillis = millis();
     uint32_t currentMicros = micros();
 
     switch (_state) {
         case State::IDLE:
-            // Check if minimum cycle interval has elapsed since last cycle
-            if ((currentMicros - _stateTimerMicros) >= MIN_CYCLE_INTERVAL_US) {
-                digitalWrite(_iledPin, HIGH); // Turn ON LED
+            // Check if the user-configured sample interval has elapsed
+            if ((currentMillis - _lastSampleMillis) >= _sampleIntervalMs) {
+                digitalWrite(_iledPin, HIGH); // Turn ON IR LED
                 _stateTimerMicros = currentMicros;
                 _state = State::WAITING_STABILIZATION;
             }
@@ -83,18 +88,19 @@ bool WaveshareDustSensor::update() {
             // Wait 280us for signal stabilization
             if ((currentMicros - _stateTimerMicros) >= PULSE_SAMPLE_WAIT_US) {
                 uint16_t rawValue = readAdcRaw();
-                digitalWrite(_iledPin, LOW); // Turn OFF LED (strictly <= 320us)
+                digitalWrite(_iledPin, LOW); // Turn OFF IR LED immediately
 
                 processRawValue(rawValue);
 
+                _lastSampleMillis = currentMillis;
                 _stateTimerMicros = currentMicros;
-                _state = State::WAITING_CYCLE_END;
+                _state = State::WAITING_COOLDOWN;
                 return true; // Fresh measurement ready!
             }
             break;
 
-        case State::WAITING_CYCLE_END:
-            // Enforce at least 9.68ms off-time
+        case State::WAITING_COOLDOWN:
+            // Enforce at least 9.68ms off-time before next cycle can trigger
             if ((currentMicros - _stateTimerMicros) >= CYCLE_OFF_TIME_US) {
                 _state = State::IDLE;
             }
@@ -102,6 +108,18 @@ bool WaveshareDustSensor::update() {
     }
 
     return false;
+}
+
+void WaveshareDustSensor::setSampleIntervalMs(uint32_t intervalMs) {
+    if (intervalMs < MIN_CYCLE_INTERVAL_MS) {
+        _sampleIntervalMs = MIN_CYCLE_INTERVAL_MS; // Enforce minimum 10ms datasheet limit
+    } else {
+        _sampleIntervalMs = intervalMs;
+    }
+}
+
+uint32_t WaveshareDustSensor::getSampleIntervalMs() const {
+    return _sampleIntervalMs;
 }
 
 float WaveshareDustSensor::calibrateZero(uint16_t sampleCount, uint16_t delayBetweenSamplesMs) {
@@ -114,7 +132,7 @@ float WaveshareDustSensor::calibrateZero(uint16_t sampleCount, uint16_t delayBet
 
     for (uint16_t i = 0; i < sampleCount; ++i) {
         if (read()) {
-            accumulatedVoltage += _lastActualVoltage;
+            accumulatedVoltage += _lastRawActualVoltage;
             validSamples++;
         }
         if (delayBetweenSamplesMs > 0) {
@@ -192,12 +210,20 @@ float WaveshareDustSensor::getActualVoltage() const {
     return _lastActualVoltage;
 }
 
+float WaveshareDustSensor::getRawActualVoltage() const {
+    return _lastRawActualVoltage;
+}
+
 float WaveshareDustSensor::getDustDensity() const {
     return _lastDustDensity;
 }
 
 float WaveshareDustSensor::getDustDensityMg() const {
     return _lastDustDensity / 1000.0f;
+}
+
+bool WaveshareDustSensor::isSaturated() const {
+    return (_lastActualVoltage >= 3.6f || _lastDustDensity >= 500.0f);
 }
 
 DustAirQuality WaveshareDustSensor::getAirQuality() const {
@@ -238,23 +264,23 @@ uint16_t WaveshareDustSensor::readAdcRaw() {
 void WaveshareDustSensor::processRawValue(uint16_t rawAdc) {
     _lastRawADC = rawAdc;
 
-    // 1. Calculate voltage measured on the microcontroller ADC pin
+    // 1. Calculate voltage measured directly on the microcontroller ADC pin
     _lastPinVoltage = (static_cast<float>(rawAdc) * _vRef) / static_cast<float>(_adcMax);
 
     // 2. Account for Waveshare onboard 11:1 voltage divider to obtain actual sensor voltage
-    float rawActualVoltage = _lastPinVoltage * _dividerRatio;
+    _lastRawActualVoltage = _lastPinVoltage * _dividerRatio;
 
     // 3. Apply Exponential Moving Average (EMA) filter if enabled
     if (_filterEnabled) {
         if (!_filterInitialized) {
-            _filteredVoltage = rawActualVoltage;
+            _filteredVoltage = _lastRawActualVoltage;
             _filterInitialized = true;
         } else {
-            _filteredVoltage = (_filterAlpha * rawActualVoltage) + ((1.0f - _filterAlpha) * _filteredVoltage);
+            _filteredVoltage = (_filterAlpha * _lastRawActualVoltage) + ((1.0f - _filterAlpha) * _filteredVoltage);
         }
         _lastActualVoltage = _filteredVoltage;
     } else {
-        _lastActualVoltage = rawActualVoltage;
+        _lastActualVoltage = _lastRawActualVoltage;
     }
 
     // 4. Calculate delta above zero-dust clean-air baseline
@@ -266,3 +292,4 @@ void WaveshareDustSensor::processRawValue(uint16_t rawAdc) {
     // 5. Convert delta voltage to dust density: (deltaV / sensitivity) * 100 ug/m3
     _lastDustDensity = (deltaV / _sensitivity) * 100.0f;
 }
+

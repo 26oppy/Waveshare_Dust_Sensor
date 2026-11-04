@@ -9,7 +9,8 @@
     "gp2y1010au0f",
     "pm2.5",
     "waveshare",
-    "environmental"
+    "environmental",
+    "library"
   ],
   "repository": {
     "type": "git",
@@ -24,3 +25,4 @@
   "frameworks": "arduino",
   "platforms": "*"
 }
+

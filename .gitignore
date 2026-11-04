@@ -18,3 +18,4 @@ ehthumbs.db
 # Arduino CLI / build caches
 build/
 *.build/
+

@@ -50,7 +50,7 @@ public:
 
     /**
      * @brief Perform a synchronous (blocking) measurement.
-     * Generates the 320us LED pulse, samples AOUT at 280us, and applies cool-down.
+     * Drives the LED pulse, samples AOUT at 280us, and applies cool-down.
      * @return true if measurement succeeded, false otherwise.
      */
     bool read();
@@ -58,7 +58,8 @@ public:
     /**
      * @brief Non-blocking state machine updater.
      * Call this repeatedly inside loop().
-     * Controls LED pulse timing and off-time cool-down asynchronously using micros().
+     * Automatically handles sampling at the configured sample interval (default: 1000ms)
+     * without blocking other tasks.
      * @return true when a new complete measurement sample has been processed.
      */
     bool update();
@@ -74,6 +75,17 @@ public:
     // -------------------------------------------------------------------------
     // Configuration & Calibration Setters
     // -------------------------------------------------------------------------
+
+    /**
+     * @brief Set the non-blocking sampling interval in milliseconds (default: 1000ms).
+     * Minimum allowed interval is 10ms to respect the sensor duty cycle.
+     */
+    void setSampleIntervalMs(uint32_t intervalMs);
+
+    /**
+     * @brief Get the current non-blocking sampling interval in milliseconds.
+     */
+    uint32_t getSampleIntervalMs() const;
 
     /**
      * @brief Set the ADC reference voltage (e.g. 3.3V or 5.0V).
@@ -142,8 +154,14 @@ public:
 
     /**
      * @brief Get the actual internal sensor output voltage (PinVoltage * DividerRatio).
+     * Returns the filtered value if filtering is enabled.
      */
     float getActualVoltage() const;
+
+    /**
+     * @brief Get the raw (unfiltered) internal sensor output voltage.
+     */
+    float getRawActualVoltage() const;
 
     /**
      * @brief Get the calculated dust density in micrograms per cubic meter (ug/m3).
@@ -154,6 +172,11 @@ public:
      * @brief Get the calculated dust density in milligrams per cubic meter (mg/m3).
      */
     float getDustDensityMg() const;
+
+    /**
+     * @brief Check whether the sensor reading has reached optical saturation (>= 500 ug/m3 or >= 3.6V).
+     */
+    bool isSaturated() const;
 
     /**
      * @brief Get the Air Quality qualitative category.
@@ -189,6 +212,7 @@ private:
     // Cached measurement results
     uint16_t _lastRawADC;
     float _lastPinVoltage;
+    float _lastRawActualVoltage;
     float _lastActualVoltage;
     float _lastDustDensity;
 
@@ -196,10 +220,12 @@ private:
     enum class State : uint8_t {
         IDLE = 0,
         WAITING_STABILIZATION,
-        WAITING_CYCLE_END
+        WAITING_COOLDOWN
     };
     State _state;
     uint32_t _stateTimerMicros;
+    uint32_t _lastSampleMillis;
+    uint32_t _sampleIntervalMs;
 
     // Internal helper methods
     uint16_t readAdcRaw();
@@ -207,3 +233,4 @@ private:
 };
 
 #endif // WAVESHARE_DUST_SENSOR_H
+
