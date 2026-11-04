@@ -14,6 +14,10 @@
 
 #include <WaveshareDustSensor.h>
 
+#ifndef LED_BUILTIN
+#define LED_BUILTIN 2 // Fallback for boards without LED_BUILTIN defined (e.g. generic ESP32)
+#endif
+
 const uint8_t PIN_AOUT = A0;
 const uint8_t PIN_ILED = 2;
 const uint8_t PIN_LED  = LED_BUILTIN; // Built-in heartbeat LED
