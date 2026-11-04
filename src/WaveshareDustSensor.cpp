@@ -64,7 +64,11 @@ bool WaveshareDustSensor::read() {
     // 5. Complete the minimum off-time recovery period (9.68ms)
     delayMicroseconds(CYCLE_OFF_TIME_US);
 
-    // 6. Calculate physical values
+    // 6. Reset state machine timer so non-blocking mode stays aligned
+    _state = State::IDLE;
+    _stateTimerMicros = micros();
+
+    // 7. Calculate physical values
     processRawValue(rawValue);
 
     return true;
@@ -142,6 +146,12 @@ float WaveshareDustSensor::calibrateZero(uint16_t sampleCount, uint16_t delayBet
 
     if (validSamples > 0) {
         _vZero = accumulatedVoltage / (float)validSamples;
+        // Recalculate last reading with the newly calibrated baseline
+        float deltaV = _lastActualVoltage - _vZero;
+        if (deltaV < 0.0f) {
+            deltaV = 0.0f;
+        }
+        _lastDustDensity = (deltaV / _sensitivity) * 100.0f;
     }
 
     return _vZero;
