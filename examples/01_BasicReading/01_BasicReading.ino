@@ -61,7 +61,12 @@ void loop() {
         Serial.print(dustSensor.getDustDensity(), 1);
         Serial.print(F(" ug/m3"));
 
-        Serial.print(F(" ["));
+        Serial.print(F(" | AQI: "));
+        Serial.print(dustSensor.getAQI());
+
+        Serial.print(F(" [Level "));
+        Serial.print(dustSensor.getAirQualityLevelString());
+        Serial.print(F(": "));
         Serial.print(dustSensor.getAirQualityString());
         Serial.println(F("]"));
     } else {

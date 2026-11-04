@@ -311,27 +311,70 @@ DustAirQuality WaveshareDustSensor::getAirQuality() const {
     if (_lastDustDensity < 35.0f) {
         return DustAirQuality::EXCELLENT;
     } else if (_lastDustDensity < 75.0f) {
-        return DustAirQuality::GOOD;
+        return DustAirQuality::AVERAGE;
     } else if (_lastDustDensity < 115.0f) {
-        return DustAirQuality::MODERATE;
+        return DustAirQuality::LIGHT_POLLUTION;
     } else if (_lastDustDensity < 150.0f) {
-        return DustAirQuality::POOR;
+        return DustAirQuality::MODERATE_POLLUTION;
     } else if (_lastDustDensity < 250.0f) {
-        return DustAirQuality::VERY_POOR;
+        return DustAirQuality::HEAVY_POLLUTION;
     } else {
-        return DustAirQuality::HAZARDOUS;
+        return DustAirQuality::SERIOUS_POLLUTION;
+    }
+}
+
+uint8_t WaveshareDustSensor::getAirQualityLevel() const {
+    return static_cast<uint8_t>(getAirQuality());
+}
+
+const char* WaveshareDustSensor::getAirQualityLevelString() const {
+    switch (getAirQuality()) {
+        case DustAirQuality::EXCELLENT:          return "I";
+        case DustAirQuality::AVERAGE:            return "II";
+        case DustAirQuality::LIGHT_POLLUTION:    return "III";
+        case DustAirQuality::MODERATE_POLLUTION: return "IV";
+        case DustAirQuality::HEAVY_POLLUTION:    return "V";
+        case DustAirQuality::SERIOUS_POLLUTION:  return "VI";
+        default:                                 return "Unknown";
     }
 }
 
 const char* WaveshareDustSensor::getAirQualityString() const {
     switch (getAirQuality()) {
-        case DustAirQuality::EXCELLENT: return "Excellent (Clean)";
-        case DustAirQuality::GOOD:      return "Good";
-        case DustAirQuality::MODERATE:  return "Moderate (Hazy)";
-        case DustAirQuality::POOR:      return "Poor (Sensitive Warning)";
-        case DustAirQuality::VERY_POOR: return "Very Poor (Unhealthy)";
-        case DustAirQuality::HAZARDOUS: return "Hazardous";
-        default:                        return "Unknown";
+        case DustAirQuality::EXCELLENT:          return "Excellent";
+        case DustAirQuality::AVERAGE:            return "Average";
+        case DustAirQuality::LIGHT_POLLUTION:    return "Light pollution";
+        case DustAirQuality::MODERATE_POLLUTION: return "Moderate pollution";
+        case DustAirQuality::HEAVY_POLLUTION:    return "Heavy pollution";
+        case DustAirQuality::SERIOUS_POLLUTION:  return "Serious pollution";
+        default:                                 return "Unknown";
+    }
+}
+
+uint16_t WaveshareDustSensor::getAQI() const {
+    // Piecewise linear interpolation matching the official Waveshare PM2.5 / AQI table:
+    // 0 - 35 ug/m3   -> AQI 0 - 50
+    // 35 - 75 ug/m3  -> AQI 51 - 100
+    // 75 - 115 ug/m3 -> AQI 101 - 150
+    // 115 - 150 ug/m3-> AQI 151 - 200
+    // 150 - 250 ug/m3-> AQI 201 - 300
+    // 250 - 500 ug/m3-> AQI 301 - 500
+    if (_lastDustDensity <= 0.0f) {
+        return 0;
+    } else if (_lastDustDensity <= 35.0f) {
+        return static_cast<uint16_t>((_lastDustDensity * 50.0f) / 35.0f + 0.5f);
+    } else if (_lastDustDensity <= 75.0f) {
+        return static_cast<uint16_t>(51.0f + ((_lastDustDensity - 35.0f) * 49.0f) / 40.0f + 0.5f);
+    } else if (_lastDustDensity <= 115.0f) {
+        return static_cast<uint16_t>(101.0f + ((_lastDustDensity - 75.0f) * 49.0f) / 40.0f + 0.5f);
+    } else if (_lastDustDensity <= 150.0f) {
+        return static_cast<uint16_t>(151.0f + ((_lastDustDensity - 115.0f) * 49.0f) / 35.0f + 0.5f);
+    } else if (_lastDustDensity <= 250.0f) {
+        return static_cast<uint16_t>(201.0f + ((_lastDustDensity - 150.0f) * 99.0f) / 100.0f + 0.5f);
+    } else if (_lastDustDensity <= 500.0f) {
+        return static_cast<uint16_t>(301.0f + ((_lastDustDensity - 250.0f) * 199.0f) / 250.0f + 0.5f);
+    } else {
+        return 500;
     }
 }
 

@@ -83,12 +83,19 @@ Categorical classifications based on particulate concentration:
 
 ```cpp
 enum class DustAirQuality : uint8_t {
-    EXCELLENT = 0,  // 0 - 35 ug/m3 (Clean indoor air)
-    GOOD,           // 35 - 75 ug/m3 (Normal outdoor air)
-    MODERATE,       // 75 - 115 ug/m3 (Noticeable haze / moderate dust)
-    POOR,           // 115 - 150 ug/m3 (Unhealthy for sensitive groups)
-    VERY_POOR,      // 150 - 250 ug/m3 (Unhealthy air quality)
-    HAZARDOUS       // > 250 ug/m3 (Hazardous air quality)
+    EXCELLENT = 1,          // Level I:   0 - 35 ug/m3  (AQI 0 - 50, Excellent)
+    AVERAGE = 2,            // Level II:  35 - 75 ug/m3  (AQI 51 - 100, Average)
+    LIGHT_POLLUTION = 3,    // Level III: 75 - 115 ug/m3 (AQI 101 - 150, Light pollution)
+    MODERATE_POLLUTION = 4, // Level IV:  115 - 150 ug/m3 (AQI 151 - 200, Moderate pollution)
+    HEAVY_POLLUTION = 5,    // Level V:   150 - 250 ug/m3 (AQI 201 - 300, Heavy pollution)
+    SERIOUS_POLLUTION = 6,  // Level VI:  250 - 500 ug/m3 (AQI >= 300, Serious pollution)
+    
+    // Aliases for backwards compatibility:
+    GOOD = AVERAGE,
+    MODERATE = LIGHT_POLLUTION,
+    POOR = MODERATE_POLLUTION,
+    VERY_POOR = HEAVY_POLLUTION,
+    HAZARDOUS = SERIOUS_POLLUTION
 };
 ```
 
@@ -464,8 +471,11 @@ const char* getAirQualityString() const;
 | `getDustDensity()` | `float` | $\mu\text{g/m}^3$ | Calculated particulate matter concentration. |
 | `getDustDensityMg()` | `float` | $\text{mg/m}^3$ | Particulate concentration in milligrams per cubic meter. |
 | `isSaturated()` | `bool` | `true` / `false` | Returns `true` if reading reached optical ceiling ($\ge 500\,\mu\text{g/m}^3$ or $\ge 3.6\,\text{V}$). |
-| `getAirQuality()` | `DustAirQuality` | Enum | Categorical air quality tier. |
-| `getAirQualityString()` | `const char*` | String | Human-readable air quality status text. |
+| `getAirQuality()` | `DustAirQuality` | Enum | Categorical air quality level tier (Level I to VI). |
+| `getAirQualityLevel()` | `uint8_t` | $1 - 6$ | Numeric quality level (1 to 6) matching Roman numerals I to VI. |
+| `getAirQualityLevelString()` | `const char*` | String | Roman numeral level string (`"I"`, `"II"`, `"III"`, `"IV"`, `"V"`, `"VI"`). |
+| `getAirQualityString()` | `const char*` | String | Official Waveshare evaluation string (`"Excellent"`, `"Average"`, etc.). |
+| `getAQI()` | `uint16_t` | $0 - 500$ | Calculated Air Quality Index using piecewise linear interpolation. |
 
 * **Example:**
   ```cpp

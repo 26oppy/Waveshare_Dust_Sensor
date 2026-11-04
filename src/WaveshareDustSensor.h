@@ -13,13 +13,24 @@
 /**
  * @brief Air quality index categories based on particulate matter concentration.
  */
+/**
+ * @brief Official Waveshare & AQI Air Quality classification levels.
+ * Matches the official Waveshare PM2.5 / AQI air quality evaluation table.
+ */
 enum class DustAirQuality : uint8_t {
-    EXCELLENT = 0,  ///< 0 - 35 ug/m3 (Clean indoor air)
-    GOOD,           ///< 35 - 75 ug/m3 (Normal outdoor air)
-    MODERATE,       ///< 75 - 115 ug/m3 (Noticeable haze/dust)
-    POOR,           ///< 115 - 150 ug/m3 (Unhealthy for sensitive groups)
-    VERY_POOR,      ///< 150 - 250 ug/m3 (Unhealthy air quality)
-    HAZARDOUS       ///< > 250 ug/m3 (Hazardous air quality)
+    EXCELLENT = 1,          ///< Level I:   0 - 35 ug/m3  (AQI 0 - 50, Excellent)
+    AVERAGE = 2,            ///< Level II:  35 - 75 ug/m3  (AQI 51 - 100, Average)
+    LIGHT_POLLUTION = 3,    ///< Level III: 75 - 115 ug/m3 (AQI 101 - 150, Light pollution)
+    MODERATE_POLLUTION = 4, ///< Level IV:  115 - 150 ug/m3 (AQI 151 - 200, Moderate pollution)
+    HEAVY_POLLUTION = 5,    ///< Level V:   150 - 250 ug/m3 (AQI 201 - 300, Heavy pollution)
+    SERIOUS_POLLUTION = 6,  ///< Level VI:  250 - 500 ug/m3 (AQI >= 300, Serious pollution)
+
+    // Aliases for backwards compatibility with earlier v1.0.0 code:
+    GOOD = AVERAGE,
+    MODERATE = LIGHT_POLLUTION,
+    POOR = MODERATE_POLLUTION,
+    VERY_POOR = HEAVY_POLLUTION,
+    HAZARDOUS = SERIOUS_POLLUTION
 };
 
 /**
@@ -220,14 +231,30 @@ public:
     bool isSaturated() const;
 
     /**
-     * @brief Get the Air Quality qualitative category.
+     * @brief Get the Air Quality qualitative category (Level I through VI).
      */
     DustAirQuality getAirQuality() const;
 
     /**
-     * @brief Get a human-readable string for the current air quality.
+     * @brief Get the numerical air quality level (1 to 6) corresponding to Roman numerals I to VI.
+     */
+    uint8_t getAirQualityLevel() const;
+
+    /**
+     * @brief Get the Roman numeral string for the air quality level ("I", "II", "III", "IV", "V", "VI").
+     */
+    const char* getAirQualityLevelString() const;
+
+    /**
+     * @brief Get the official Waveshare evaluation string ("Excellent", "Average", "Light pollution", etc.).
      */
     const char* getAirQualityString() const;
+
+    /**
+     * @brief Calculate the Air Quality Index (AQI 0 - 500) based on current PM2.5 density.
+     * Uses the official Waveshare AQI piecewise linear interpolation.
+     */
+    uint16_t getAQI() const;
 
 private:
     // Pin mapping
