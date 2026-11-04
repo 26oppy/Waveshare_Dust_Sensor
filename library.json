@@ -14,11 +14,12 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/your-username/Waveshare_Dust_Sensor.git"
+    "url": "https://github.com/26oppy/Waveshare_Dust_Sensor.git"
   },
   "authors": [
     {
-      "name": "Waveshare Dust Sensor Library Contributors"
+      "name": "26oppy",
+      "url": "https://github.com/26oppy"
     }
   ],
   "license": "MIT",

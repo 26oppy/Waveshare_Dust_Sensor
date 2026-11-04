@@ -1,7 +1,7 @@
 /**
  * @file WaveshareDustSensor.cpp
  * @brief Implementation of the lightweight Waveshare Dust Sensor driver.
- * @author Waveshare Dust Sensor Library Contributors
+ * @author 26oppy
  * @license MIT
  */
 

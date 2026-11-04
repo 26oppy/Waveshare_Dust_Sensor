@@ -1,7 +1,7 @@
 /**
  * @file WaveshareDustSensor.h
  * @brief Lightweight, non-blocking library for the Waveshare Dust Sensor (Sharp GP2Y1010AU0F).
- * @author Waveshare Dust Sensor Library Contributors
+ * @author 26oppy
  * @license MIT
  */
 

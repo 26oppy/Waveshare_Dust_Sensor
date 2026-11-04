@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/your-username/Waveshare_Dust_Sensor/actions"><img src="https://img.shields.io/badge/CI-Passing-2ea44f?style=flat-square&logo=githubactions&logoColor=white" alt="Build Status"></a>
+  <a href="https://github.com/26oppy/Waveshare_Dust_Sensor/actions"><img src="https://img.shields.io/badge/CI-Passing-2ea44f?style=flat-square&logo=githubactions&logoColor=white" alt="Build Status"></a>
   <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-blue?style=flat-square" alt="License"></a>
   <a href="https://www.arduino.cc/"><img src="https://img.shields.io/badge/Arduino%20IDE-1.5%2B%20%7C%202.x-00979D?style=flat-square&logo=arduino&logoColor=white" alt="Arduino"></a>
   <a href="https://platformio.org/"><img src="https://img.shields.io/badge/PlatformIO-Registry-F06529?style=flat-square&logo=platformio&logoColor=white" alt="PlatformIO"></a>
